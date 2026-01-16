@@ -1,0 +1,26 @@
+{
+  "name": "energi-api-test-framework",
+  "version": "1.0.0",
+  "description": "Production-grade API testing framework for Energi Data Service using Postman + Newman",
+  "scripts": {
+    "test:api": "newman run postman/collections/EnergiDataService.postman_collection.json -e postman/environments/energi.test.postman_environment.json --reporters cli,htmlextra --reporter-htmlextra-export reports/newman/report.html --timeout-request 30000",
+    "test:api:elspot:ddt": "newman run postman/collections/EnergiDataService.postman_collection.json -e postman/environments/energi.test.postman_environment.json --folder 01_Elspotprices --iteration-data postman/data/elspotprices_cases.csv --reporters cli,htmlextra --reporter-htmlextra-export reports/newman/elspot-ddt-report.html --timeout-request 30000",
+    "test:api:co2:ddt": "newman run postman/collections/EnergiDataService.postman_collection.json -e postman/environments/energi.test.postman_environment.json --folder 02_CO2Emis --iteration-data postman/data/co2emis_cases.csv --reporters cli,htmlextra --reporter-htmlextra-export reports/newman/co2-ddt-report.html --timeout-request 30000",
+    "test:api:negative": "newman run postman/collections/EnergiDataService.postman_collection.json -e postman/environments/energi.test.postman_environment.json --folder 99_Negative --reporters cli,htmlextra --reporter-htmlextra-export reports/newman/negative-report.html --timeout-request 30000",
+    "test:all": "npm run test:api && npm run test:api:elspot:ddt && npm run test:api:co2:ddt && npm run test:api:negative"
+  },
+  "dependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "api-testing",
+    "postman",
+    "newman",
+    "energi-data-service",
+    "qa-automation"
+  ],
+  "author": "",
+  "license": "ISC"
+}
