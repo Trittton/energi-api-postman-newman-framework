@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["total", "limit", "dataset", "records"],
+  "properties": {
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of records available (filtered)"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000,
+      "description": "Maximum records returned in this response"
+    },
+    "dataset": {
+      "type": "string",
+      "enum": ["CO2Emis"],
+      "description": "Dataset identifier"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["Minutes5UTC", "Minutes5DK", "PriceArea", "CO2Emission"],
+        "properties": {
+          "Minutes5UTC": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+            "description": "5-minute interval timestamp in UTC (ISO 8601)"
+          },
+          "Minutes5DK": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+            "description": "5-minute interval timestamp in Danish local time (ISO 8601)"
+          },
+          "PriceArea": {
+            "type": "string",
+            "enum": ["DK1", "DK2"],
+            "description": "Price area code (CO2 data only for Danish zones)"
+          },
+          "CO2Emission": {
+            "type": "number",
+            "minimum": 0,
+            "description": "CO2 emission value in grams per kWh"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
