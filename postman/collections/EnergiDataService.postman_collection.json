@@ -1,0 +1,50 @@
+{
+  "info": {
+    "name": "Energi Data Service API Tests",
+    "description": "Production-grade API testing framework for Danish Energi Data Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.iterationData.has('start')) {",
+          "    pm.environment.set('startISO', '2024-12-01');",
+          "    pm.environment.set('endISO', '2024-12-02');",
+          "    console.log('[DateRange] Start: ' + pm.environment.get('startISO') + ', End: ' + pm.environment.get('endISO'));",
+          "}",
+          "console.log('[Collection Pre-request] baseUrl: ' + pm.environment.get('baseUrl'));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00_PreRequest",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}{{datasetPath}}/Elspotprices?limit=1"
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                "pm.test('Content-Type is application/json', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'));",
+                "pm.test('Response time < 5000ms', () => pm.expect(pm.response.responseTime).to.be.below(5000));",
+                "pm.test('API is available', () => pm.expect(pm.response.code).to.equal(200));",
+                "console.log('[Health Check] API is healthy');"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "01_Elspotprices",
+      "item": [
