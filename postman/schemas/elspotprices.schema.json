@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["total", "limit", "dataset", "records"],
+  "properties": {
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of records available (filtered)"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000,
+      "description": "Maximum records returned in this response"
+    },
+    "dataset": {
+      "type": "string",
+      "enum": ["Elspotprices"],
+      "description": "Dataset identifier"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["HourUTC", "HourDK", "PriceArea", "SpotPriceDKK", "SpotPriceEUR"],
+        "properties": {
+          "HourUTC": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+            "description": "Hour timestamp in UTC (ISO 8601)"
+          },
+          "HourDK": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$",
+            "description": "Hour timestamp in Danish local time (ISO 8601)"
+          },
+          "PriceArea": {
+            "type": "string",
+            "enum": ["DK1", "DK2", "DE", "NO2", "SE3", "SE4"],
+            "description": "Price area code"
+          },
+          "SpotPriceDKK": {
+            "type": "number",
+            "description": "Spot price in Danish Krone"
+          },
+          "SpotPriceEUR": {
+            "type": "number",
+            "description": "Spot price in Euro"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
