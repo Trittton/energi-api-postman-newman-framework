@@ -1,0 +1,7 @@
+caseName,start,end,limit,filter,columns,expectedStatus,expectedMinRecords,description
+Recent 24h DK1,2026-01-19T00:00:00,2026-01-20T00:00:00,100,"{""PriceArea"":""DK1""}",,200,20,Retrieve last 24 hours for DK1
+Limit Boundary Low,2026-01-20T00:00:00,2026-01-20T05:00:00,1,,,200,1,Test minimum limit of 1
+Limit Boundary High,2026-01-19T00:00:00,2026-01-20T00:00:00,100,,,200,24,Test limit of 100
+DK2 Filter,2026-01-20T00:00:00,2026-01-20T12:00:00,50,"{""PriceArea"":""DK2""}",,200,1,Filter for DK2 area only
+Column Selection,2026-01-20T10:00:00,2026-01-20T15:00:00,10,,"HourUTC,PriceArea,SpotPriceDKK",200,1,Select specific columns only
+Wide Date Range,2026-01-01T00:00:00,2026-01-31T23:59:59,100,,,200,100,Test large date range pagination
