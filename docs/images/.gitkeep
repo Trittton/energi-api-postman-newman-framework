@@ -1,0 +1,10 @@
+# Screenshots Directory
+
+This directory contains screenshots for the README documentation.
+
+## Adding Screenshots
+
+1. Run tests locally: `npm run test:api`
+2. Open the generated report: `reports/newman/report.html`
+3. Take a screenshot of the report
+4. Save it as `report-preview.png` in this directory
