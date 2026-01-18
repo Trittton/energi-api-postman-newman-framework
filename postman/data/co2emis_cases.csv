@@ -1,0 +1,6 @@
+caseName,start,end,limit,filter,columns,expectedStatus,expectedMinRecords,description
+Recent 1h DK1,2026-01-20T16:00:00,2026-01-20T17:00:00,100,"{""PriceArea"":""DK1""}",,200,10,Retrieve last hour 5-min intervals DK1
+Limit Test,2026-01-20T12:00:00,2026-01-20T13:00:00,5,,,200,5,Test small limit
+DK2 Emissions,2026-01-20T00:00:00,2026-01-20T06:00:00,100,"{""PriceArea"":""DK2""}",,200,1,Filter DK2 emissions
+Column Selection,2026-01-20T15:00:00,2026-01-20T16:00:00,20,,"Minutes5UTC,PriceArea,CO2Emission",200,1,Select specific columns
+High Frequency Data,2026-01-20T00:00:00,2026-01-20T01:00:00,100,,,200,12,1 hour = 12 5-min intervals
