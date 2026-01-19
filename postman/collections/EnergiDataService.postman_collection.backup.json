@@ -268,3 +268,394 @@
             }
           },
           "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "",
+                "pm.test('Exactly 1 record returned (boundary test)', function() {",
+                "    pm.expect(jsonData.records).to.have.lengthOf(1);",
+                "});",
+                "",
+                "pm.test('Limit field reflects query param', function() {",
+                "    pm.expect(jsonData.limit).to.equal(1);",
+                "});",
+                "",
+                "logOnFailure('TC-03 Limit Boundary (1)', {});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "TC-03b: Limit Boundary (limit=100)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start=2025-01-15T00:00:00&end=2025-01-16T00:00:00&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "2025-01-15T00:00:00"},
+                {"key": "end", "value": "2025-01-16T00:00:00"},
+                {"key": "limit", "value": "100"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "",
+                "pm.test('Record count does not exceed limit', function() {",
+                "    pm.expect(jsonData.records.length).to.be.at.most(100);",
+                "});",
+                "",
+                "pm.test('Limit field is 100', function() {",
+                "    pm.expect(jsonData.limit).to.equal(100);",
+                "});",
+                "",
+                "logOnFailure('TC-03 Limit Boundary (100)', {});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "TC-05: Filter PriceArea DK1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start=2025-01-15T00:00:00&end=2025-01-16T00:00:00&limit=100&filter={\"PriceArea\":\"DK1\"}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "2025-01-15T00:00:00"},
+                {"key": "end", "value": "2025-01-16T00:00:00"},
+                {"key": "limit", "value": "100"},
+                {"key": "filter", "value": "{\"PriceArea\":\"DK1\"}"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "",
+                "pm.test('Filter applied: All records are DK1', function() {",
+                "    pm.expect(jsonData.records).to.be.an('array').that.is.not.empty;",
+                "    jsonData.records.forEach((record, index) => {",
+                "        pm.expect(record.PriceArea, 'Record ' + index + ' PriceArea').to.equal('DK1');",
+                "    });",
+                "});",
+                "",
+                "pm.test('Total reflects filtered dataset', function() {",
+                "    pm.expect(jsonData.total).to.be.greaterThan(0);",
+                "});",
+                "",
+                "logOnFailure('TC-05 Filter Validation', {});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "02_CO2Emis",
+      "item": [
+        {
+          "name": "Get Recent Emissions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/CO2Emis?start={{startISO}}&end={{endISO}}&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "CO2Emis"],
+              "query": [
+                {"key": "start", "value": "{{startISO}}"},
+                {"key": "end", "value": "{{endISO}}"},
+                {"key": "limit", "value": "100"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "",
+                "pm.test('Dataset is CO2Emis', function() {",
+                "    pm.expect(jsonData.dataset).to.equal('CO2Emis');",
+                "});",
+                "",
+                "pm.test('Records array exists and not empty', function() {",
+                "    pm.expect(jsonData.records).to.be.an('array').that.is.not.empty;",
+                "});",
+                "",
+                "pm.test('Each record has required CO2 fields', function() {",
+                "    jsonData.records.forEach((record, index) => {",
+                "        pm.expect(record, 'Record ' + index).to.have.all.keys(",
+                "            'Minutes5UTC', 'Minutes5DK', 'PriceArea', 'CO2Emission'",
+                "        );",
+                "    });",
+                "});",
+                "",
+                "logOnFailure('Get Recent Emissions', {});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Schema Validation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/CO2Emis?start={{startISO}}&end={{endISO}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "CO2Emis"],
+              "query": [
+                {"key": "start", "value": "{{startISO}}"},
+                {"key": "end", "value": "{{endISO}}"},
+                {"key": "limit", "value": "50"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "",
+                "pm.test('Response matches basic CO2Emis schema', function() {",
+                "    pm.expect(jsonData).to.have.property('total').that.is.a('number');",
+                "    pm.expect(jsonData).to.have.property('limit').that.is.a('number');",
+                "    pm.expect(jsonData).to.have.property('dataset', 'CO2Emis');",
+                "    pm.expect(jsonData).to.have.property('records').that.is.an('array');",
+                "});",
+                "",
+                "pm.test('All timestamp fields are valid ISO 8601', function() {",
+                "    const iso8601Pattern = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$/;",
+                "    jsonData.records.forEach((record, index) => {",
+                "        pm.expect(record.Minutes5UTC, 'Record ' + index + ' Minutes5UTC').to.match(iso8601Pattern);",
+                "        pm.expect(record.Minutes5DK, 'Record ' + index + ' Minutes5DK').to.match(iso8601Pattern);",
+                "    });",
+                "});",
+                "",
+                "pm.test('CO2Emission values are non-negative numbers', function() {",
+                "    jsonData.records.forEach((record, index) => {",
+                "        pm.expect(record.CO2Emission, 'Record ' + index + ' CO2Emission').to.be.a('number');",
+                "        pm.expect(record.CO2Emission, 'Record ' + index + ' CO2Emission').to.be.at.least(0);",
+                "    });",
+                "});",
+                "",
+                "logOnFailure('CO2Emis Schema Validation', {});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Filter DK1 vs DK2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/CO2Emis?start=2025-01-15T00:00:00&end=2025-01-16T00:00:00&limit=100&filter={\"PriceArea\":\"DK2\"}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "CO2Emis"],
+              "query": [
+                {"key": "start", "value": "2025-01-15T00:00:00"},
+                {"key": "end", "value": "2025-01-16T00:00:00"},
+                {"key": "limit", "value": "100"},
+                {"key": "filter", "value": "{\"PriceArea\":\"DK2\"}"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "",
+                "pm.test('All records have PriceArea DK2', function() {",
+                "    pm.expect(jsonData.records).to.be.an('array').that.is.not.empty;",
+                "    jsonData.records.forEach((record, index) => {",
+                "        pm.expect(record.PriceArea, 'Record ' + index + ' PriceArea').to.equal('DK2');",
+                "    });",
+                "});",
+                "",
+                "logOnFailure('Filter DK1 vs DK2', {});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Column Selection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/CO2Emis?start=2025-01-15T00:00:00&end=2025-01-16T00:00:00&limit=20&columns=Minutes5UTC,PriceArea,CO2Emission",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "CO2Emis"],
+              "query": [
+                {"key": "start", "value": "2025-01-15T00:00:00"},
+                {"key": "end", "value": "2025-01-16T00:00:00"},
+                {"key": "limit", "value": "20"},
+                {"key": "columns", "value": "Minutes5UTC,PriceArea,CO2Emission"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "",
+                "pm.test('Records contain selected columns', function() {",
+                "    pm.expect(jsonData.records).to.be.an('array').that.is.not.empty;",
+                "    jsonData.records.forEach((record) => {",
+                "        pm.expect(record).to.have.property('Minutes5UTC');",
+                "        pm.expect(record).to.have.property('PriceArea');",
+                "        pm.expect(record).to.have.property('CO2Emission');",
+                "    });",
+                "});",
+                "",
+                "logOnFailure('Column Selection', {});"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "99_Negative",
+      "item": [
+        {
+          "name": "TC-04: Invalid Start Format",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start=invalid-date-format&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "invalid-date-format"},
+                {"key": "limit", "value": "10"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Status code is 400 Bad Request', function() {",
+                "    pm.response.to.have.status(400);",
+                "});",
+                "",
+                "pm.test('Response time is acceptable even for errors', function() {",
+                "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                "});",
+                "",
+                "console.log('[TC-04 Negative] Invalid start param returned: ' + pm.response.status);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Invalid Filter Syntax",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start=2025-01-15T00:00:00&end=2025-01-16T00:00:00&filter=invalid-json-syntax",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "2025-01-15T00:00:00"},
+                {"key": "end", "value": "2025-01-16T00:00:00"},
+                {"key": "filter", "value": "invalid-json-syntax"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Status code indicates error (400 or 422)', function() {",
+                "    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                "});",
+                "",
+                "console.log('[Negative] Invalid filter returned: ' + pm.response.status);"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "Exceed Limit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start=2025-01-15T00:00:00&end=2025-01-16T00:00:00&limit=9999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "2025-01-15T00:00:00"},
+                {"key": "end", "value": "2025-01-16T00:00:00"},
+                {"key": "limit", "value": "9999999"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "pm.test('Response handles extreme limit gracefully', function() {",
+                "    pm.expect(pm.response.code).to.be.oneOf([200, 400, 413]);",
+                "});",
+                "",
+                "if (pm.response.code === 200) {",
+                "    const jsonData = pm.response.json();",
+                "    pm.test('Records count is reasonable despite extreme limit', function() {",
+                "        pm.expect(jsonData.records.length).to.be.below(100000);",
+                "    });",
+                "}",
+                "",
+                "console.log('[Negative] Extreme limit returned: ' + pm.response.status);"
+              ]
+            }
+          }]
+        }
+      ]
+    }
+  ]
+}
