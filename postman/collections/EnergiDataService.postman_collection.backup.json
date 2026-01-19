@@ -48,3 +48,223 @@
           "                pm.response.to.have.status(expectedStatus);",
           "            });",
           "            if (expectedStatus === 200) {",
+          "                pm.test('Content-Type is application/json', function() {",
+          "                    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "                });",
+          "                pm.test('Response time < 5000ms', function() {",
+          "                    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "                });",
+          "            }",
+          "        };",
+          "        ",
+          "        var logOnFailure = function(testName, details) {",
+          "            if (pm.response.code !== 200) {",
+          "                console.error('[FAILURE] ' + testName);",
+          "                console.error('  Status: ' + pm.response.code);",
+          "                console.error('  URL: ' + pm.request.url);",
+          "            }",
+          "        };",
+          "    `;",
+          "    pm.globals.set('pmlib_code', utilsCode);",
+          "    eval(utilsCode);",
+          "} else {",
+          "    eval(pm.globals.get('pmlib_code'));",
+          "}",
+          "",
+          "if (!pm.iterationData.has('start')) {",
+          "    const endDate = new Date();",
+          "    endDate.setDate(endDate.getDate() - 2);",
+          "    const startDate = new Date(endDate);",
+          "    startDate.setDate(startDate.getDate() - 1);",
+          "    ",
+          "    pm.environment.set('startISO', startDate.toISOString().split('.')[0]);",
+          "    pm.environment.set('endISO', endDate.toISOString().split('.')[0]);",
+          "    ",
+          "    console.log('[DateRange] Start: ' + pm.environment.get('startISO') + ', End: ' + pm.environment.get('endISO'));",
+          "}",
+          "",
+          "console.log('[Collection Pre-request] baseUrl: ' + pm.environment.get('baseUrl'));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "eval(pm.globals.get('pmlib_code') || '');"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00_PreRequest",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?limit=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [{"key": "limit", "value": "1"}]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "pm.test('API is available', function() {",
+                "    pm.expect(pm.response.code).to.equal(200);",
+                "});",
+                "console.log('[Health Check] API is healthy');"
+              ]
+            }
+          }]
+        }
+      ]
+    },
+    {
+      "name": "01_Elspotprices",
+      "item": [
+        {
+          "name": "TC-01: Get by Date Range",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start={{startISO}}&end={{endISO}}&limit={{defaultLimit}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "{{startISO}}"},
+                {"key": "end", "value": "{{endISO}}"},
+                {"key": "limit", "value": "{{defaultLimit}}"}
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["console.log('[TC-01] Testing date range: ' + pm.environment.get('startISO') + ' to ' + pm.environment.get('endISO'));"]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "validateBasicResponse(200);",
+                  "",
+                  "const jsonData = pm.response.json();",
+                  "",
+                  "pm.test('Response contains required root fields', function() {",
+                  "    pm.expect(jsonData).to.have.property('total');",
+                  "    pm.expect(jsonData).to.have.property('limit');",
+                  "    pm.expect(jsonData).to.have.property('dataset');",
+                  "    pm.expect(jsonData).to.have.property('records');",
+                  "});",
+                  "",
+                  "pm.test('Dataset is Elspotprices', function() {",
+                  "    pm.expect(jsonData.dataset).to.equal('Elspotprices');",
+                  "});",
+                  "",
+                  "pm.test('Records is array and not empty', function() {",
+                  "    pm.expect(jsonData.records).to.be.an('array').that.is.not.empty;",
+                  "});",
+                  "",
+                  "pm.test('Record count respects limit', function() {",
+                  "    pm.expect(jsonData.records.length).to.be.at.most(parseInt(pm.environment.get('defaultLimit')));",
+                  "});",
+                  "",
+                  "pm.test('Each record has required fields', function() {",
+                  "    jsonData.records.forEach((record, index) => {",
+                  "        pm.expect(record, 'Record ' + index).to.have.all.keys(",
+                  "            'HourUTC', 'HourDK', 'PriceArea', 'SpotPriceDKK', 'SpotPriceEUR'",
+                  "        );",
+                  "    });",
+                  "});",
+                  "",
+                  "logOnFailure('TC-01 Date Range Test', {});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-02: Schema Validation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start={{startISO}}&end={{endISO}}&limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "{{startISO}}"},
+                {"key": "end", "value": "{{endISO}}"},
+                {"key": "limit", "value": "50"}
+              ]
+            }
+          },
+          "event": [{
+            "listen": "test",
+            "script": {
+              "type": "text/javascript",
+              "exec": [
+                "validateBasicResponse(200);",
+                "",
+                "const jsonData = pm.response.json();",
+                "const schema = loadSchema('elspotprices');",
+                "",
+                "pm.test('Response matches basic Elspotprices schema', function() {",
+                "    pm.expect(jsonData).to.have.property('total').that.is.a('number');",
+                "    pm.expect(jsonData).to.have.property('limit').that.is.a('number');",
+                "    pm.expect(jsonData).to.have.property('dataset', 'Elspotprices');",
+                "    pm.expect(jsonData).to.have.property('records').that.is.an('array');",
+                "});",
+                "",
+                "pm.test('All timestamp fields are valid ISO 8601', function() {",
+                "    const iso8601Pattern = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$/;",
+                "    jsonData.records.forEach((record, index) => {",
+                "        pm.expect(record.HourUTC, 'Record ' + index + ' HourUTC').to.match(iso8601Pattern);",
+                "        pm.expect(record.HourDK, 'Record ' + index + ' HourDK').to.match(iso8601Pattern);",
+                "    });",
+                "});",
+                "",
+                "pm.test('Price values are numbers', function() {",
+                "    jsonData.records.forEach((record, index) => {",
+                "        pm.expect(record.SpotPriceDKK, 'Record ' + index + ' SpotPriceDKK').to.be.a('number');",
+                "        pm.expect(record.SpotPriceEUR, 'Record ' + index + ' SpotPriceEUR').to.be.a('number');",
+                "    });",
+                "});",
+                "",
+                "logOnFailure('TC-02 Schema Validation', {});"
+              ]
+            }
+          }]
+        },
+        {
+          "name": "TC-03a: Limit Boundary (limit=1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{datasetPath}}/Elspotprices?start=2025-01-15T00:00:00&end=2025-01-16T00:00:00&limit=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["{{datasetPath}}", "Elspotprices"],
+              "query": [
+                {"key": "start", "value": "2025-01-15T00:00:00"},
+                {"key": "end", "value": "2025-01-16T00:00:00"},
+                {"key": "limit", "value": "1"}
+              ]
+            }
+          },
+          "event": [{
