@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Energi Data Service API Tests",
-    "description": "Production-grade API testing framework for Danish Energi Data Service",
+    "description": "API testing framework for Danish Energi Data Service",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "event": [

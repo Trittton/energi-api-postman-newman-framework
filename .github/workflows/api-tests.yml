@@ -1,0 +1,97 @@
+name: API Tests - Energi Data Service
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  api-tests:
+    name: Run Postman/Newman API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create reports directory
+        run: mkdir -p reports/newman
+
+      - name: Run API Tests (Full Collection)
+        run: npm run test:api
+        continue-on-error: false
+
+      - name: Run Data-Driven Tests (Elspotprices)
+        run: npm run test:api:elspot:ddt
+        continue-on-error: false
+
+      - name: Run Data-Driven Tests (CO2Emis)
+        run: npm run test:api:co2:ddt
+        continue-on-error: false
+
+      - name: Run Negative Tests
+        run: npm run test:api:negative
+        continue-on-error: false
+
+      - name: Upload Test Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-reports
+          path: reports/newman/*.html
+          retention-days: 30
+
+      - name: Publish Test Report Comment (on PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🧪 API Test Results\n\nTests completed! Download the full report from the artifacts section.\n\n**Workflow Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            });
+
+      - name: Fail workflow if tests failed
+        if: failure()
+        run: exit 1
+
+  publish-report:
+    name: Publish Report to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: api-tests
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: newman-reports
+          path: ./public
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
