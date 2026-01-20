@@ -48,3 +48,54 @@ This framework validates two datasets from the [Energi Data Service API](https:/
 - **Data-Driven**: CSV iteration
 
 ---
+
+## Prerequisites
+
+- **Node.js** 18+ (20 LTS recommended)
+- **npm** 9+
+- **Postman** (optional, for collection editing)
+
+---
+
+## Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Trittton/energi-api-postman-newman-framework.git
+   cd energi-api-postman-newman-framework
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Verify installation:
+   ```bash
+   npm run test:api
+   ```
+
+---
+
+## Repository Structure
+
+```
+/postman
+  /collections          # Postman collections
+  /environments         # Environment configurations
+  /data                 # CSV files for data-driven tests
+  /schemas              # JSON schemas for contract validation
+/scripts               # Newman runner scripts
+/reports/newman        # Generated HTML reports (gitignored)
+/.github/workflows     # CI/CD pipeline
+```
+
+---
+
+## Usage
+
+### Run All Tests
+```bash
+npm run test:api
+```
+
