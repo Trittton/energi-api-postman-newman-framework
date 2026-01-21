@@ -5,7 +5,7 @@
 [![Newman](https://img.shields.io/badge/Newman-6.2.1-orange)](https://www.npmjs.com/package/newman)
 [![Live Report](https://img.shields.io/badge/Report-Live-green)](https://trittton.github.io/energi-api-postman-newman-framework/report.html)
 
-API testing framework for the Danish Energi Data Service using **Postman + Newman**.
+Production-grade API testing framework for the Danish Energi Data Service using **Postman + Newman**.
 
 ## 📊 Live Test Report
 
@@ -169,8 +169,6 @@ The HTML reports provide rich visualizations of test execution:
 
 ![Test Report Screenshot](docs/images/report-preview.png)
 
-> **Note**: To add your own screenshot, run tests locally and capture `reports/newman/report.html`, then save it to `docs/images/report-preview.png`
-
 ---
 
 ## Adding New Tests
@@ -253,3 +251,178 @@ Ensure `reports/newman/` directory exists:
 mkdir -p reports/newman
 ```
 
+---
+
+## Contributing
+
+1. Create feature branch: `git checkout -b feature/new-test`
+2. Add tests following existing patterns
+3. Run tests locally: `npm run test:all`
+4. Commit and push
+5. Open pull request
+
+---
+
+## License
+
+ISC
+
+---
+
+## References
+
+- [Energi Data Service API Documentation](https://api.energidataservice.dk/dataset/)
+- [Newman Documentation](https://github.com/postmanlabs/newman)
+- [newman-reporter-htmlextra](https://www.npmjs.com/package/newman-reporter-htmlextra)
+- [Postman Learning Center](https://learning.postman.com/)
+- [Technical Task Document](energi-postman-newman-technical-task.md)
+
+---
+
+## Project Structure Details
+
+### Collection Architecture
+
+The Postman collection follows a modular design with collection-level utilities:
+
+**Collection-level Pre-request Script:**
+- Date utility functions (`getISODateString`, `setDateRangeLast24Hours`)
+- Automatic date range generation for non-data-driven runs
+- Environment variable setup
+
+**Collection-level Test Script:**
+- Embedded JSON schemas (elspotprices, co2emis)
+- Shared validation functions (`validateBasicResponse`, `validateFilterResults`)
+- Failure-only logging utilities
+- Schema loading function
+
+**Folder Structure:**
+```
+00_PreRequest/     # Health checks and pre-request helpers
+01_Elspotprices/   # Elspotprices dataset tests
+02_CO2Emis/        # CO2 emissions dataset tests
+99_Negative/       # Negative test scenarios
+```
+
+### Data-Driven Testing
+
+CSV files drive parameterized test execution:
+- [postman/data/elspotprices_cases.csv](postman/data/elspotprices_cases.csv) - 6 test cases
+- [postman/data/co2emis_cases.csv](postman/data/co2emis_cases.csv) - 5 test cases
+
+Each CSV row represents one test iteration with parameters:
+- `caseName`: Test identifier
+- `start/end`: Date range
+- `limit`: Pagination limit
+- `filter`: JSON filter expression
+- `expectedStatus`: Expected HTTP status
+- `expectedMinRecords`: Minimum records expected
+
+---
+
+## API Response Structures
+
+### Elspotprices
+```json
+{
+  "total": 1806903,
+  "limit": 100,
+  "dataset": "Elspotprices",
+  "records": [{
+    "HourUTC": "2025-09-30T21:00:00",
+    "HourDK": "2025-09-30T23:00:00",
+    "PriceArea": "DK1",
+    "SpotPriceDKK": 690.700059,
+    "SpotPriceEUR": 92.540001
+  }]
+}
+```
+
+### CO2Emis
+```json
+{
+  "total": 1903306,
+  "limit": 100,
+  "dataset": "CO2Emis",
+  "records": [{
+    "Minutes5UTC": "2026-01-20T16:30:00",
+    "Minutes5DK": "2026-01-20T17:30:00",
+    "PriceArea": "DK1",
+    "CO2Emission": 160.000000
+  }]
+}
+```
+
+---
+
+## Validation Strategy
+
+The framework implements multiple validation layers:
+
+1. **HTTP Status Validation**: Verify correct status codes (200, 400, etc.)
+2. **Content-Type Validation**: Ensure `application/json` responses
+3. **Contract Validation**: JSON Schema validation for response structure
+4. **Data Type Validation**: ISO 8601 dates, numeric values, enums
+5. **Business Logic Validation**: Filter results, limit boundaries, record counts
+6. **Performance Validation**: Response time < 5000ms SLA
+
+---
+
+## Advanced Usage
+
+### Custom Newman Wrapper
+
+Use [scripts/run-newman.js](scripts/run-newman.js) for programmatic execution:
+```bash
+node scripts/run-newman.js
+```
+
+Features:
+- Automatic report directory creation
+- Summary statistics output
+- Exit code handling for CI/CD
+- Configurable timeout and reporters
+
+### Running Specific Folders
+
+Target specific test folders:
+```bash
+newman run postman/collections/EnergiDataService.postman_collection.json \
+  -e postman/environments/energi.test.postman_environment.json \
+  --folder "02_CO2Emis"
+```
+
+### Debugging Tests
+
+Enable verbose logging:
+```bash
+newman run ... --reporters cli --reporter-cli-no-summary
+```
+
+---
+
+## Maintenance
+
+### Updating Schemas
+
+When API changes occur:
+1. Update JSON schemas in `postman/schemas/`
+2. Validate with live API responses
+3. Run full test suite to verify compatibility
+4. Update collection tests if needed
+
+### Updating Test Data
+
+Refresh CSV test data periodically:
+1. Verify date ranges are current
+2. Update filters to match production data
+3. Validate expected record counts
+
+---
+
+## Support
+
+For issues or questions:
+- Open an issue in [GitHub Issues](https://github.com/Trittton/energi-api-postman-newman-framework/issues)
+- Review [Technical Task](energi-postman-newman-technical-task.md) for requirements
+- Check [API Documentation](https://api.energidataservice.dk/dataset/)
