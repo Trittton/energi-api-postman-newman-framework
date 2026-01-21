@@ -5,7 +5,7 @@
 [![Newman](https://img.shields.io/badge/Newman-6.2.1-orange)](https://www.npmjs.com/package/newman)
 [![Live Report](https://img.shields.io/badge/Report-Live-green)](https://trittton.github.io/energi-api-postman-newman-framework/report.html)
 
-Production-grade API testing framework for the [Danish Energi Data Service](https://energidataservice.dk/) using **Postman + Newman**.
+API testing framework for the [Danish Energi Data Service](https://energidataservice.dk/) using **Postman + Newman**.
 
 ## 📊 Live Test Report
 
